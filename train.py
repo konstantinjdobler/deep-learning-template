@@ -1,4 +1,4 @@
-import helpers.klib as klib
+import klib
 import click
 import pytorch_lightning as pl
 from src.data_loading import BasicDataModule
@@ -14,12 +14,12 @@ WANDB_ENTITY = "<adjust me>"
 @click.option('--epochs', '-e', help="Number of epochs to train", default=10, type=int)
 @click.option('--batch-size', '-b', help="Batch size per GPU", default=8, type=int)
 @click.option('--image-resizing', '-i', help="Image training size", default=64, type=int)
-@click.option('--offline', help="Disbale wandb online syncing", is_flag=True)
+@click.option('--offline', help="Disable wandb online syncing", is_flag=True)
 @click.option('--seed', help="Specify seed", type=int, default=None)
-@click.option('--gpus', '-g', help="Specify in one string all the GPU indices like \"0,1,3,5\". Default is to use the CPU.")
+@click.option('--gpus', '-g', type=klib.int_sequence, cls=klib.UnlimitedNargsOption, help="Specify the GPU indices to use. If `-1`, try to use all available GPUs. If omitted, use the CPU.")
 @click.option('--datasets', '-d', help="Datasets to train on", required=True, multiple=True, type=click.Path(exists=True, writable=True, file_okay=False))
 def main(ctx, **cmd_args):
-    cmd_args = klib.click_helpers.process_click_args(ctx, cmd_args)
+    cmd_args = klib.process_click_args(ctx, cmd_args)
     manual_seed_specified = cmd_args.seed is not None
     cmd_args.seed  = pl.seed_everything(workers=True, seed=cmd_args.seed)
     print(cmd_args)

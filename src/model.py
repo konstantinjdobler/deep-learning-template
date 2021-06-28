@@ -1,11 +1,10 @@
-from typing import Union
-
 from torch import Tensor
-from helpers.klib import kdict
-import pytorch_lightning as pl
-import timm
 from torch import optim, nn, sigmoid
 from torchmetrics import Accuracy, F1
+import pytorch_lightning as pl
+import timm
+from klib import kdict
+
 
 
 class BinaryClassifier(pl.LightningModule):

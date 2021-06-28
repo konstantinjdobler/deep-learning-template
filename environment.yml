@@ -8,11 +8,14 @@ dependencies:
   - cudatoolkit=10.2 # adjust or remove if on cpu
   - pytorch
   - torchvision
-  - torchaudio
-  - wandb
-  - pytorch-lightning
   - click
   - autopep8
-  - timm
   - typing
+  - pip
+  - pip:
+    - wandb
+    - pytorch-lightning
+    - timm
+
+
 
