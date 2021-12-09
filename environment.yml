@@ -1,10 +1,9 @@
 name: deep-learning-template
 channels:
-  - defaults
-  - conda-forge
+  - conda-forge # prefer conda-forge for updated packages
   - pytorch
 dependencies:
-  - python=3.8
+  - python=3.9
   - cudatoolkit=10.2 # adjust or remove if on cpu
   - pytorch
   - torchvision
@@ -12,10 +11,11 @@ dependencies:
   - autopep8
   - typing
   - pip
-  - pip:
-    - wandb
-    - pytorch-lightning
-    - timm
+  - wandb
+  - pytorch-lightning
+  - timm
+  # Use pip for packages that are outdated on conda-forge
+  # - pip:
 
 
 
