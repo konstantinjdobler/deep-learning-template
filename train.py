@@ -18,6 +18,8 @@ WANDB_ENTITY = "<adjust me>"
 @click.option('--seed', help="Specify seed", type=int, default=None)
 @click.option('--gpus', '-g', type=klib.int_sequence, cls=klib.UnlimitedNargsOption, help="Specify the GPU indices to use. If `-1`, try to use all available GPUs. If omitted, use the CPU.")
 @click.option('--datasets', '-d', help="Datasets to train on", required=True, multiple=True, type=click.Path(exists=True, writable=True, file_okay=False))
+@click.option('--fast-dev-run', '--fd', help="Useful for debugging", is_flag=True)
+
 def main(ctx, **cmd_args):
     cmd_args = klib.process_click_args(ctx, cmd_args)
     manual_seed_specified = cmd_args.seed is not None
@@ -32,11 +34,11 @@ def main(ctx, **cmd_args):
 
     # Initialize a trainer
     trainer = pl.Trainer(max_epochs=cmd_args.epochs,
-                         progress_bar_refresh_rate=1,
+                         progress_bar_refresh_rate=42,
                          gpus=cmd_args.gpus,
-                         accelerator=cmd_args.accelerator,
+                         strategy=cmd_args.strategy,
                          logger=wandb_logger,
-                         benchmark=not manual_seed_specified,
+                         benchmark=True,
                          deterministic=manual_seed_specified)
 
     trainer.fit(model, dm)
@@ -44,6 +46,4 @@ def main(ctx, **cmd_args):
 
 
 if __name__ == '__main__':
-    # Needed against multiprocessing error in Colab
-    __spec__ = None
     main()

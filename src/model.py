@@ -1,10 +1,11 @@
+from copy import deepcopy
+
 from torch import Tensor
 from torch import optim, nn, sigmoid
 from torchmetrics import Accuracy, F1
 import pytorch_lightning as pl
 import timm
 from klib import kdict
-
 
 
 class BinaryClassifier(pl.LightningModule):
@@ -15,12 +16,11 @@ class BinaryClassifier(pl.LightningModule):
             'resnet50', pretrained=True, num_classes=num_classes)
         self.loss = nn.BCEWithLogitsLoss()
 
-        shared_metrics = kdict(accuracy=Accuracy(num_classes=num_classes),
-                               f1=F1(num_classes=num_classes))
-        self.metrics = kdict(
-            train=shared_metrics.copy(),
-            val=shared_metrics.copy(),
-            test=shared_metrics.copy())
+        shared_metrics = nn.ModuleDict(dict(accuracy=Accuracy(num_classes=num_classes),
+                                            f1=F1(num_classes=num_classes)))
+        self.metrics = nn.ModuleDict(dict(train_phase=deepcopy(shared_metrics),  # the `train` and `training` keywords cause an error with nn.ModuleDict
+                                          dev=deepcopy(shared_metrics),
+                                          test=deepcopy(shared_metrics)))
 
     def forward(self, x):
         return self.backbone(x)
@@ -28,7 +28,8 @@ class BinaryClassifier(pl.LightningModule):
     def _log_metrics(self, step_type: str, predictions: Tensor, labels: Tensor):
         metrics = self.metrics[step_type]
         for name, metric in metrics.items():
-            self.log(f"{step_type}/{name}", metric(predictions, labels))
+            metric(predictions, labels)
+            self.log(f"{step_type}/{name}", metric)
 
     def _step(self, step_type: str, batch):
         data, labels = batch
@@ -39,10 +40,10 @@ class BinaryClassifier(pl.LightningModule):
         return loss
 
     def training_step(self, batch, batch_idx):
-        return self._step("train", batch)
+        return self._step("train_phase", batch)
 
     def validation_step(self, batch, batch_idx):
-        return self._step("val", batch)
+        return self._step("dev", batch)
 
     def test_step(self, batch, batch_idx):
         return self._step("test", batch)
